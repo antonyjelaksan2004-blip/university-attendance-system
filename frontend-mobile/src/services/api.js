@@ -1,15 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { Platform } from "react-native";
 
 const SERVER_KEY = "attendance_api_url";
-const PHONE_SERVER = "http://192.168.227.157:8085/api";
 const DEFAULT_SERVER =
-  Platform.OS === "web" ? "http://localhost:8085/api" : PHONE_SERVER;
+  "https://university-attendance-system-production.up.railway.app/api";
+
+const isLocalServer = (value) =>
+  /localhost|127\.0\.0\.1|192\.168\.|10\.0\.2\.2|:8082|:8085/i.test(
+    String(value || "")
+  );
 
 const normalizeUrl = (value) => {
   const clean = String(value || "").trim().replace(/\/+$/, "");
-  if (!clean) return DEFAULT_SERVER;
+  if (!clean || isLocalServer(clean)) return DEFAULT_SERVER;
   return clean.endsWith("/api") ? clean : `${clean}/api`;
 };
 
@@ -20,10 +23,10 @@ const api = axios.create({
 
 export async function initializeApi() {
   const saved = await AsyncStorage.getItem(SERVER_KEY);
-  // A browser preview runs on the same laptop as the backend. Using localhost
-  // prevents an old saved Wi-Fi address from talking to a stale server.
-  api.defaults.baseURL =
-    Platform.OS === "web" ? DEFAULT_SERVER : normalizeUrl(saved || DEFAULT_SERVER);
+  api.defaults.baseURL = normalizeUrl(saved || DEFAULT_SERVER);
+  if (saved !== api.defaults.baseURL) {
+    await AsyncStorage.setItem(SERVER_KEY, api.defaults.baseURL);
+  }
   return api.defaults.baseURL;
 }
 
