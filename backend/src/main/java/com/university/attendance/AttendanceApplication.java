@@ -15,7 +15,7 @@ public class AttendanceApplication {
     }
 
     private static void applyRailwayMysqlUrl() {
-        String mysqlUrl = firstPresentEnv("MYSQL_URL", "MYSQL_PUBLIC_URL", "DATABASE_URL", "MYSQL_PRIVATE_URL");
+        String mysqlUrl = firstPresentEnv("MYSQL_PUBLIC_URL", "DATABASE_URL", "MYSQL_URL", "MYSQL_PRIVATE_URL");
         if (mysqlUrl == null || mysqlUrl.isBlank()) {
             return;
         }
